@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  thermography-ai:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017
+      - DB_NAME=thermography_ai
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    volumes:
+      - ./uploads:/app/backend/uploads
+
+  mongo:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    # Uncomment for GPU support:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+volumes:
+  mongo_data:
+  ollama_data:

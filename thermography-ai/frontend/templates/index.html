@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thermography Compliance AI — Industrial Monitoring Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+
+<!-- Ambient Background -->
+<div class="ambient-bg">
+  <div class="ambient-orb orb-1"></div>
+  <div class="ambient-orb orb-2"></div>
+  <div class="ambient-orb orb-3"></div>
+  <div class="grid-overlay"></div>
+</div>
+
+<!-- Sidebar Navigation -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <path d="M14 2L2 8v12l12 6 12-6V8L14 2z" stroke="url(#grad1)" stroke-width="1.5" fill="none"/>
+        <path d="M14 8l-6 3v6l6 3 6-3v-6L14 8z" fill="url(#grad1)" opacity="0.3"/>
+        <circle cx="14" cy="14" r="2" fill="#f97316"/>
+        <defs>
+          <linearGradient id="grad1" x1="2" y1="2" x2="26" y2="26">
+            <stop offset="0%" stop-color="#f97316"/>
+            <stop offset="100%" stop-color="#ef4444"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <span class="logo-name">ThermoAI</span>
+      <span class="logo-sub">Compliance Platform</span>
+    </div>
+  </div>
+
+  <div class="sidebar-section-label">MONITORING</div>
+  <ul class="nav-list">
+    <li class="nav-item active" data-section="dashboard">
+      <span class="nav-icon">⬡</span>
+      <span>Dashboard</span>
+      <span class="nav-badge" id="nav-critical-count"></span>
+    </li>
+    <li class="nav-item" data-section="inspections">
+      <span class="nav-icon">◈</span>
+      <span>Inspections</span>
+    </li>
+    <li class="nav-item" data-section="equipment">
+      <span class="nav-icon">◉</span>
+      <span>Equipment</span>
+    </li>
+    <li class="nav-item" data-section="alerts">
+      <span class="nav-icon">◬</span>
+      <span>Critical Alerts</span>
+      <span class="nav-badge danger" id="nav-alerts-count"></span>
+    </li>
+  </ul>
+
+  <div class="sidebar-section-label">ANALYSIS</div>
+  <ul class="nav-list">
+    <li class="nav-item" data-section="upload">
+      <span class="nav-icon">⬒</span>
+      <span>Upload & Scan</span>
+    </li>
+    <li class="nav-item" data-section="reports">
+      <span class="nav-icon">◫</span>
+      <span>Reports</span>
+    </li>
+    <li class="nav-item ai-nav" data-section="ai">
+      <span class="nav-icon">◈</span>
+      <span>AI Assistant</span>
+      <span class="ai-badge">AI</span>
+    </li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <div class="ai-status-indicator" id="ai-status">
+      <span class="status-dot" id="status-dot"></span>
+      <span class="status-text" id="status-text">Checking AI...</span>
+    </div>
+    <div class="sidebar-version">v2.0.0 — NFPA 70B</div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main-content">
+
+  <!-- Header -->
+  <header class="top-header">
+    <div class="header-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="breadcrumb" id="breadcrumb">Dashboard</div>
+    </div>
+    <div class="header-right">
+      <div class="header-search">
+        <span class="search-icon">⌕</span>
+        <input type="text" placeholder="Search inspections, equipment..." class="search-input" id="global-search">
+      </div>
+      <div class="header-time" id="header-time"></div>
+      <div class="header-user">
+        <div class="user-avatar">JM</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- SECTION: Dashboard -->
+  <section id="section-dashboard" class="content-section active">
+    <div class="section-header">
+      <h1 class="section-title">Thermal Monitoring Dashboard</h1>
+      <p class="section-sub">Real-time industrial thermography compliance overview</p>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid" id="kpi-grid">
+      <div class="kpi-card critical-card loading-shimmer" id="kpi-critical">
+        <div class="kpi-icon">🔥</div>
+        <div class="kpi-value" id="kpi-critical-val">—</div>
+        <div class="kpi-label">Critical Alerts</div>
+        <div class="kpi-delta">Active findings</div>
+      </div>
+      <div class="kpi-card serious-card loading-shimmer" id="kpi-serious">
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-value" id="kpi-serious-val">—</div>
+        <div class="kpi-label">Serious Alerts</div>
+        <div class="kpi-delta">72-hr window</div>
+      </div>
+      <div class="kpi-card compliance-card loading-shimmer" id="kpi-compliance">
+        <div class="kpi-icon">◈</div>
+        <div class="kpi-value" id="kpi-compliance-val">—%</div>
+        <div class="kpi-label">Avg Compliance</div>
+        <div class="kpi-delta" id="kpi-compliance-trend">NFPA 70B Score</div>
+      </div>
+      <div class="kpi-card total-card loading-shimmer" id="kpi-total">
+        <div class="kpi-icon">⬡</div>
+        <div class="kpi-value" id="kpi-total-val">—</div>
+        <div class="kpi-label">Total Inspections</div>
+        <div class="kpi-delta" id="kpi-monthly">This month</div>
+      </div>
+      <div class="kpi-card equipment-card loading-shimmer" id="kpi-equipment">
+        <div class="kpi-icon">◉</div>
+        <div class="kpi-value" id="kpi-equipment-val">—</div>
+        <div class="kpi-label">Equipment Monitored</div>
+        <div class="kpi-delta">Active assets</div>
+      </div>
+      <div class="kpi-card open-card loading-shimmer" id="kpi-open">
+        <div class="kpi-icon">◬</div>
+        <div class="kpi-value" id="kpi-open-val">—</div>
+        <div class="kpi-label">Open Alerts</div>
+        <div class="kpi-delta">Unresolved</div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <div class="chart-card glass-card">
+        <div class="chart-header">
+          <h3>Severity Distribution</h3>
+          <span class="chart-badge">Live</span>
+        </div>
+        <div class="severity-bars" id="severity-bars">
+          <div class="sev-bar-row loading-shimmer">
+            <span class="sev-label">Critical</span>
+            <div class="sev-bar-track"><div class="sev-bar" style="width:0%;background:#ef4444"></div></div>
+            <span class="sev-count">—</span>
+          </div>
+          <div class="sev-bar-row loading-shimmer">
+            <span class="sev-label">Serious</span>
+            <div class="sev-bar-track"><div class="sev-bar" style="width:0%;background:#f97316"></div></div>
+            <span class="sev-count">—</span>
+          </div>
+          <div class="sev-bar-row loading-shimmer">
+            <span class="sev-label">Moderate</span>
+            <div class="sev-bar-track"><div class="sev-bar" style="width:0%;background:#eab308"></div></div>
+            <span class="sev-count">—</span>
+          </div>
+          <div class="sev-bar-row loading-shimmer">
+            <span class="sev-label">Minor</span>
+            <div class="sev-bar-track"><div class="sev-bar" style="width:0%;background:#3b82f6"></div></div>
+            <span class="sev-count">—</span>
+          </div>
+          <div class="sev-bar-row loading-shimmer">
+            <span class="sev-label">Normal</span>
+            <div class="sev-bar-track"><div class="sev-bar" style="width:0%;background:#22c55e"></div></div>
+            <span class="sev-count">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card glass-card">
+        <div class="chart-header">
+          <h3>Recent Critical Alerts</h3>
+          <span class="chart-badge danger">Action Required</span>
+        </div>
+        <div class="alerts-list" id="dashboard-alerts-list">
+          <div class="loading-shimmer alert-row-shimmer"></div>
+          <div class="loading-shimmer alert-row-shimmer"></div>
+          <div class="loading-shimmer alert-row-shimmer"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compliance Gauge -->
+    <div class="compliance-section glass-card">
+      <div class="compliance-header">
+        <h3>Platform Compliance Status</h3>
+        <span class="chart-badge" id="compliance-badge">Loading...</span>
+      </div>
+      <div class="compliance-gauge-wrap">
+        <div class="gauge-container">
+          <svg class="gauge-svg" viewBox="0 0 200 110">
+            <path d="M 20 100 A 80 80 0 0 1 180 100" stroke="#1e293b" stroke-width="16" fill="none" stroke-linecap="round"/>
+            <path id="gauge-arc" d="M 20 100 A 80 80 0 0 1 180 100" stroke="url(#gaugeGrad)" stroke-width="16" fill="none" stroke-linecap="round"
+                  stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+            <defs>
+              <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ef4444"/>
+                <stop offset="50%" stop-color="#f97316"/>
+                <stop offset="100%" stop-color="#22c55e"/>
+              </linearGradient>
+            </defs>
+            <text x="100" y="95" text-anchor="middle" class="gauge-value-text" id="gauge-text">0%</text>
+          </svg>
+        </div>
+        <div class="compliance-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#22c55e"></span> Excellent (90-100%)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span> Good (75-89%)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#eab308"></span> Fair (60-74%)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#f97316"></span> Poor (40-59%)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#ef4444"></span> Critical (&lt;40%)</div>
+        </div>
+        <div class="compliance-standards">
+          <div class="std-badge">NFPA 70B</div>
+          <div class="std-badge">IEC 60076</div>
+          <div class="std-badge">ISO 18434</div>
+          <div class="std-badge">NETA MTS</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: Inspections -->
+  <section id="section-inspections" class="content-section">
+    <div class="section-header">
+      <h1 class="section-title">Inspection History</h1>
+      <p class="section-sub">Complete thermographic inspection records</p>
+    </div>
+    <div class="table-toolbar glass-card">
+      <div class="filter-group">
+        <select class="filter-select" id="filter-severity" onchange="loadInspections()">
+          <option value="">All Severities</option>
+          <option value="Critical">Critical</option>
+          <option value="Serious">Serious</option>
+          <option value="Moderate">Moderate</option>
+          <option value="Minor">Minor</option>
+          <option value="Normal">Normal</option>
+        </select>
+        <select class="filter-select" id="filter-status" onchange="loadInspections()">
+          <option value="">All Status</option>
+          <option value="Open">Open</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Closed">Closed</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="loadInspections()">↻ Refresh</button>
+    </div>
+    <div class="glass-card table-card">
+      <table class="data-table" id="inspections-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Equipment</th>
+            <th>Location</th>
+            <th>Inspector</th>
+            <th>Hotspot °C</th>
+            <th>Delta-T</th>
+            <th>Severity</th>
+            <th>Compliance</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="inspections-tbody">
+          <tr><td colspan="10" class="loading-cell">Loading inspections...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" id="inspections-pagination"></div>
+  </section>
+
+  <!-- SECTION: Equipment -->
+  <section id="section-equipment" class="content-section">
+    <div class="section-header">
+      <h1 class="section-title">Equipment Registry</h1>
+      <p class="section-sub">Monitored industrial assets and health scores</p>
+    </div>
+    <div class="equipment-grid" id="equipment-grid">
+      <div class="loading-shimmer eq-card-shimmer"></div>
+      <div class="loading-shimmer eq-card-shimmer"></div>
+      <div class="loading-shimmer eq-card-shimmer"></div>
+      <div class="loading-shimmer eq-card-shimmer"></div>
+    </div>
+  </section>
+
+  <!-- SECTION: Alerts -->
+  <section id="section-alerts" class="content-section">
+    <div class="section-header">
+      <h1 class="section-title">Critical Alerts</h1>
+      <p class="section-sub">Findings requiring immediate action</p>
+    </div>
+    <div class="alerts-container" id="alerts-container">
+      <div class="loading-shimmer alert-shimmer-big"></div>
+    </div>
+  </section>
+
+  <!-- SECTION: Upload -->
+  <section id="section-upload" class="content-section">
+    <div class="section-header">
+      <h1 class="section-title">Thermal Image Analysis</h1>
+      <p class="section-sub">Upload and analyze infrared thermographic images</p>
+    </div>
+    <div class="upload-layout">
+      <div class="glass-card upload-card">
+        <div class="upload-zone" id="upload-zone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+          <div class="upload-icon">⬒</div>
+          <h3>Drop Thermal Image Here</h3>
+          <p>Supports JPEG, PNG, TIFF — IR camera exports</p>
+          <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)" style="display:none">
+          <button class="btn-primary" onclick="document.getElementById('file-input').click()">Browse Files</button>
+        </div>
+        <div class="upload-config">
+          <div class="config-row">
+            <label>Equipment ID</label>
+            <select class="filter-select" id="upload-equipment">
+              <option value="EQ-001">EQ-001 — Main Distribution Panel A</option>
+              <option value="EQ-002">EQ-002 — Transformer TR-2400</option>
+              <option value="EQ-003">EQ-003 — Motor Drive MCC-7</option>
+              <option value="EQ-004">EQ-004 — Switchgear SG-480V</option>
+              <option value="EQ-005">EQ-005 — Compressor Motor CM-150</option>
+              <option value="EQ-006">EQ-006 — UPS System UPS-200K</option>
+            </select>
+          </div>
+          <div class="config-row">
+            <label>Inspector</label>
+            <input type="text" class="filter-select" id="upload-inspector" value="Field Inspector" placeholder="Inspector name">
+          </div>
+          <div class="config-row">
+            <label>Standard</label>
+            <select class="filter-select" id="upload-standard">
+              <option>NFPA 70B</option>
+              <option>IEC 60076</option>
+              <option>ISO 18434-1</option>
+              <option>NETA MTS</option>
+            </select>
+          </div>
+          <button class="btn-primary btn-full" id="upload-btn" onclick="uploadImage()" disabled>Analyze Image</button>
+        </div>
+      </div>
+      <div class="glass-card analysis-card" id="analysis-result" style="display:none">
+        <h3 class="analysis-title">Thermal Analysis Results</h3>
+        <div id="analysis-content"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: Reports -->
+  <section id="section-reports" class="content-section">
+    <div class="section-header">
+      <h1 class="section-title">Compliance Reports</h1>
+      <p class="section-sub">Generate and download inspection reports</p>
+    </div>
+    <div class="glass-card" style="padding:2rem">
+      <p style="color:var(--text-muted);margin-bottom:1.5rem">Generate reports from the inspection table. Click any inspection to download its compliance report.</p>
+      <div class="reports-summary" id="reports-summary">
+        <div class="loading-shimmer" style="height:60px;border-radius:8px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: AI Assistant -->
+  <section id="section-ai" class="content-section">
+    <div class="ai-assistant-layout">
+      <div class="ai-header">
+        <div class="ai-header-left">
+          <div class="ai-avatar-large">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="14" fill="url(#aiGrad)" opacity="0.2"/>
+              <path d="M10 16c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6-6-2.7-6-6z" fill="url(#aiGrad)"/>
+              <circle cx="16" cy="16" r="2" fill="white"/>
+              <defs>
+                <linearGradient id="aiGrad" x1="0" y1="0" x2="32" y2="32">
+                  <stop stop-color="#f97316"/>
+                  <stop offset="1" stop-color="#ef4444"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div>
+            <h2 class="ai-title">ThermoAI Assistant</h2>
+            <p class="ai-subtitle">Powered by Llama 3 · MCP-connected · MongoDB live data</p>
+          </div>
+        </div>
+        <div class="ai-controls">
+          <button class="btn-ghost" onclick="clearChat()">Clear Chat</button>
+          <div class="ai-model-badge" id="ai-model-badge">⬡ Checking...</div>
+        </div>
+      </div>
+
+      <div class="chat-container" id="chat-container">
+        <!-- Welcome message -->
+        <div class="chat-message assistant-message" id="welcome-message">
+          <div class="msg-avatar">AI</div>
+          <div class="msg-content">
+            <div class="msg-bubble">
+              <p>Hello! I'm <strong>ThermoAI</strong>, your industrial thermography AI assistant. I'm connected to your live MongoDB data via MCP tools.</p>
+              <p style="margin-top:0.75rem">I can help you with:</p>
+              <ul style="margin:0.5rem 0 0 1rem;line-height:1.8">
+                <li>📊 Live dashboard statistics and alerts</li>
+                <li>🌡️ Thermography analysis and Delta-T classification</li>
+                <li>⚡ Transformer, motor, switchgear diagnostics</li>
+                <li>📋 NFPA 70B, IEC 60076, ISO 18434 compliance</li>
+                <li>🔧 Predictive maintenance recommendations</li>
+              </ul>
+            </div>
+            <div class="msg-time">Now</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Suggested Prompts -->
+      <div class="suggested-prompts" id="suggested-prompts">
+        <button class="prompt-chip" onclick="sendSuggestion(this)">📊 Show dashboard stats</button>
+        <button class="prompt-chip" onclick="sendSuggestion(this)">🚨 What are the critical alerts?</button>
+        <button class="prompt-chip" onclick="sendSuggestion(this)">🌡️ Explain Delta-T classification</button>
+        <button class="prompt-chip" onclick="sendSuggestion(this)">⚡ Transformer inspection guidelines</button>
+        <button class="prompt-chip" onclick="sendSuggestion(this)">📋 NFPA 70B compliance overview</button>
+        <button class="prompt-chip" onclick="sendSuggestion(this)">🔧 Equipment health summary</button>
+        <button class="prompt-chip" onclick="sendSuggestion(this)">📈 Recent inspection history</button>
+        <button class="prompt-chip" onclick="sendSuggestion(this)">🏭 Predictive maintenance best practices</button>
+      </div>
+
+      <!-- Chat Input -->
+      <div class="chat-input-area">
+        <div class="chat-input-wrap">
+          <div class="mcp-indicator" id="mcp-indicator" style="display:none">
+            <span class="mcp-dot"></span>
+            <span id="mcp-tool-name">Querying MongoDB...</span>
+          </div>
+          <textarea
+            id="chat-input"
+            class="chat-textarea"
+            placeholder="Ask about your thermography data, compliance status, equipment health, or any engineering question..."
+            rows="1"
+            onkeydown="handleChatKey(event)"
+            oninput="autoResize(this)"
+          ></textarea>
+          <button class="chat-send-btn" id="chat-send-btn" onclick="sendMessage()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="chat-footer-note">ThermoAI uses MCP tools to fetch live data from MongoDB and Llama 3 for engineering expertise</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
